@@ -47,6 +47,7 @@ fi
 INFILE="$1"
 LABEL="unknown"
 TMPFILE=$(mktemp /tmp/.ctf.XXXXXXXXXX)
+OBJCOPY=${OBJCOPY:-objcopy}
 
 # Extract kernel version
 if [ -z "${INFILE##bsd*}" ]; then
@@ -59,12 +60,12 @@ fi
 ctfconv -o ${TMPFILE} -l "${LABEL}" "${INFILE}" 2> /dev/null
 
 if [ $? -eq 0 ]; then
-	objcopy  ${STRIPFLAG} \
+	${OBJCOPY}  ${STRIPFLAG} \
 		--add-section .SUNW_ctf=${TMPFILE} "${INFILE}" ${OUTFILE}
 
 	# Also add CTF data to the debug kernel
 	if [ -z "${INFILE##bsd.gdb}" ]; then
-		objcopy --add-section .SUNW_ctf=${TMPFILE} "${INFILE}"
+		${OBJCOPY} --add-section .SUNW_ctf=${TMPFILE} "${INFILE}"
 	fi
 else
 	strip ${STRIPFLAG} ${OUTFILE:+"-o${OUTFILE}"} "${INFILE}"
